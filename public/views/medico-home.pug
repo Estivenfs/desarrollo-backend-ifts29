@@ -1,0 +1,133 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="icon", href="/favicon.ico")
+    link(rel="stylesheet", href="/css/common.css")
+    link(rel="stylesheet", href="/css/medico-home.css")
+
+  body
+    .medico-panel
+      a.logout-btn(href="#", onclick="logout()") Cerrar Sesión
+      
+      .header
+        h1= title
+        p Sistema de Gestión Médica
+      
+      .welcome-section
+        h2 ¡Bienvenido, Dr. #{usuario.nombre}!
+        p Especialidad: #{usuario.perfil?.empleado?.area || 'Medicina General'}
+        p Turno actual: #{new Date().getHours() < 12 ? 'Mañana' : new Date().getHours() < 18 ? 'Tarde' : 'Noche'}
+        p Fecha: #{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      
+      .quick-stats
+        .stat-card
+          .stat-number 12
+          h3 Citas Hoy
+          p Consultas programadas
+        
+        .stat-card
+          .stat-number 3
+          h3 Urgentes
+          p Casos prioritarios
+        
+        .stat-card
+          .stat-number 45
+          h3 Pacientes
+          p Bajo su cuidado
+        
+        .stat-card
+          .stat-number 8
+          h3 Pendientes
+          p Tareas por completar
+      
+      .main-content
+        .section-card
+          h2.section-title Próximas Citas
+          ul.patient-list
+            li.patient-item
+              .patient-info
+                .patient-name María González
+                .patient-details 09:30 - Consulta de seguimiento
+              span.normal-badge Normal
+            
+            li.patient-item
+              .patient-info
+                .patient-name Carlos Rodríguez
+                .patient-details 10:15 - Primera consulta
+              span.normal-badge Normal
+            
+            li.patient-item
+              .patient-info
+                .patient-name Ana Martínez
+                .patient-details 11:00 - Control post-operatorio
+              span.urgent-badge Urgente
+            
+            li.patient-item
+              .patient-info
+                .patient-name Luis Fernández
+                .patient-details 11:45 - Revisión de estudios
+              span.normal-badge Normal
+        
+        .section-card
+          h2.section-title Tareas Pendientes
+          ul.patient-list
+            li.patient-item
+              .patient-info
+                .patient-name Revisar análisis de sangre
+                .patient-details Paciente: Elena Ruiz
+              span.urgent-badge Urgente
+            
+            li.patient-item
+              .patient-info
+                .patient-name Completar historia clínica
+                .patient-details Paciente: Roberto Silva
+              span.normal-badge Normal
+            
+            li.patient-item
+              .patient-info
+                .patient-name Solicitar interconsulta
+                .patient-details Paciente: Carmen López
+              span.normal-badge Normal
+            
+            li.patient-item
+              .patient-info
+                .patient-name Actualizar tratamiento
+                .patient-details Paciente: Diego Morales
+              span.urgent-badge Urgente
+      
+      .section-card
+        h2.section-title Acciones Rápidas
+        .action-buttons
+          a.btn.btn-primary(href="/medico/pacientes") Ver Pacientes
+          a.btn.btn-primary(href="/medico/citas") Gestionar Citas
+          a.btn.btn-info(href="/medico/historiales") Historiales Clínicos
+          a.btn.btn-info(href="/medico/estudios") Estudios Médicos
+          a.btn.btn-warning(href="/medico/reportes") Generar Reportes
+          a.btn.btn-warning(href="/medico/configuracion") Mi Perfil
+
+    script.
+      async function logout() {
+        try {
+          const response = await fetch('/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem('token');
+            document.cookie = 'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/';
+          } else {
+            alert('Error al cerrar sesión');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al cerrar sesión');
+        }
+      }

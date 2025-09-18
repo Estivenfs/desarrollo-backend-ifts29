@@ -1,0 +1,234 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="icon", href="/favicon.ico")
+    link(rel="stylesheet", href="/css/common.css")
+    link(rel="stylesheet", href="/css/insumos.css")
+
+  body
+    .insumos-panel
+      .header
+        a.logout-btn(href="#", onclick="logout()") Cerrar Sesión
+        h1= title
+        p Sistema de Gestión de Insumos Médicos
+      
+      .user-info
+        div
+          strong Bienvenido: #{usuario.nombre}
+          br
+          span Rol: #{usuario.rol || 'Usuario'}
+        div
+          span Fecha: #{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      
+      .stats-grid
+        .stat-card
+          .stat-number #{insumos ? insumos.length : 0}
+          .stat-label Total de Insumos
+        
+        .stat-card
+          .stat-number #{insumos ? insumos.filter(i => i.stock > 50).length : 0}
+          .stat-label Stock Alto
+        
+        .stat-card
+          .stat-number #{insumos ? insumos.filter(i => i.stock <= 10 && i.stock > 0).length : 0}
+          .stat-label Stock Bajo
+        
+        .stat-card
+          .stat-number #{insumos ? insumos.filter(i => i.stock === 0).length : 0}
+          .stat-label Agotados
+      
+      .filters-section
+        h3 Filtros de Búsqueda
+        .filter-grid
+          .filter-group
+            .filter-label Buscar por nombre:
+            input.filter-input(type="text", id="searchName", placeholder="Nombre del insumo...")
+          
+          .filter-group
+            .filter-label Categoría:
+            select.filter-select(id="categoryFilter")
+              option(value="") Todas las categorías
+              option(value="medicamentos") Medicamentos
+              option(value="material_quirurgico") Material Quirúrgico
+              option(value="equipos") Equipos
+              option(value="consumibles") Consumibles
+              option(value="otros") Otros
+          
+          .filter-group
+            .filter-label Estado del stock:
+            select.filter-select(id="stockFilter")
+              option(value="") Todos los estados
+              option(value="alto") Stock Alto (>50)
+              option(value="medio") Stock Medio (11-50)
+              option(value="bajo") Stock Bajo (1-10)
+              option(value="agotado") Agotado (0)
+          
+          .filter-group
+            .filter-label Stock mínimo:
+            input.filter-input(type="number", id="minStock", placeholder="0", min="0")
+          
+          .filter-group
+            .filter-label Stock máximo:
+            input.filter-input(type="number", id="maxStock", placeholder="1000", min="0")
+          
+          .filter-group
+            button.search-btn(onclick="applyFilters()") Buscar
+            button.clear-btn(onclick="clearFilters()") Limpiar
+      
+      .insumos-table
+        .table-header
+          span Lista de Insumos Médicos
+          span Total: #{insumos ? insumos.length : 0} items
+        
+        .table-headers
+          div Nombre / Descripción
+          div Categoría
+          div Stock Actual
+          div Stock Mínimo
+          div Estado
+          div Última Actualización
+        
+        .table-content(id="insumosContainer")
+          if insumos && insumos.length > 0
+            each insumo in insumos
+              .insumo-item(data-name=insumo.nombre.toLowerCase(), data-categoria=insumo.categoria, data-stock=insumo.stock)
+                div
+                  .insumo-nombre= insumo.nombre
+                  .insumo-descripcion= insumo.descripcion || 'Sin descripción'
+                
+                div
+                  .categoria-badge= insumo.categoria || 'Sin categoría'
+                
+                div= insumo.stock || 0
+                
+                div= insumo.stockMinimo || 10
+                
+                div
+                  - var stockStatus = insumo.stock > 50 ? 'alto' : insumo.stock > 10 ? 'medio' : insumo.stock > 0 ? 'bajo' : 'agotado'
+                  - var stockText = insumo.stock > 50 ? 'Stock Alto' : insumo.stock > 10 ? 'Stock Medio' : insumo.stock > 0 ? 'Stock Bajo' : 'Agotado'
+                  span(class=`stock-badge stock-${stockStatus}`)= stockText
+                
+                div= new Date().toLocaleDateString('es-ES')
+          else
+            .no-results No hay insumos registrados en el sistema
+      
+      .actions-section
+        h3 Acciones Disponibles
+        .action-buttons
+          a.btn.btn-primary(href="/insumos/nuevo") Agregar Nuevo Insumo
+          a.btn.btn-warning(href="/insumos/stock-bajo") Ver Stock Bajo
+          a.btn.btn-info(href="/insumos/reportes") Generar Reportes
+          a.btn.btn-primary(href="/insumos/categorias") Gestionar Categorías
+          a.btn.btn-warning(href="/insumos/alertas") Configurar Alertas
+          a.btn.btn-info(href="/insumos/historial") Ver Historial
+
+    script.
+      async function logout() {
+        try {
+          const response = await fetch('/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem('token');
+            document.cookie = 'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/';
+          } else {
+            alert('Error al cerrar sesión');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al cerrar sesión');
+        }
+      }
+      
+      function applyFilters() {
+        const searchName = document.getElementById('searchName').value.toLowerCase();
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const stockFilter = document.getElementById('stockFilter').value;
+        const minStock = parseInt(document.getElementById('minStock').value) || 0;
+        const maxStock = parseInt(document.getElementById('maxStock').value) || Infinity;
+        
+        const items = document.querySelectorAll('.insumo-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+          const name = item.dataset.name || '';
+          const categoria = item.dataset.categoria || '';
+          const stock = parseInt(item.dataset.stock) || 0;
+          
+          let show = true;
+          
+          // Filtro por nombre
+          if (searchName && !name.includes(searchName)) {
+            show = false;
+          }
+          
+          // Filtro por categoría
+          if (categoryFilter && categoria !== categoryFilter) {
+            show = false;
+          }
+          
+          // Filtro por estado de stock
+          if (stockFilter) {
+            switch(stockFilter) {
+              case 'alto':
+                if (stock <= 50) show = false;
+                break;
+              case 'medio':
+                if (stock <= 10 || stock > 50) show = false;
+                break;
+              case 'bajo':
+                if (stock <= 0 || stock > 10) show = false;
+                break;
+              case 'agotado':
+                if (stock > 0) show = false;
+                break;
+            }
+          }
+          
+          // Filtro por rango de stock
+          if (stock < minStock || stock > maxStock) {
+            show = false;
+          }
+          
+          item.style.display = show ? 'grid' : 'none';
+          if (show) visibleCount++;
+        });
+        
+        // Actualizar contador
+        const header = document.querySelector('.table-header span:last-child');
+        if (header) {
+          header.textContent = `Mostrando: ${visibleCount} items`;
+        }
+      }
+      
+      function clearFilters() {
+        document.getElementById('searchName').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('stockFilter').value = '';
+        document.getElementById('minStock').value = '';
+        document.getElementById('maxStock').value = '';
+        
+        const items = document.querySelectorAll('.insumo-item');
+        items.forEach(item => {
+          item.style.display = 'grid';
+        });
+        
+        // Restaurar contador original
+        const header = document.querySelector('.table-header span:last-child');
+        if (header) {
+          const totalItems = document.querySelectorAll('.insumo-item').length;
+          header.textContent = `Total: ${totalItems} items`;
+        }
+      }
+      
+      // Aplicar filtros en tiempo real para la búsqueda por nombre
+      document.getElementById('searchName').addEventListener('input', applyFilters);

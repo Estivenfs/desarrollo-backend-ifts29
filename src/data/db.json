@@ -1,0 +1,195 @@
+{
+  "roles": [
+    {
+      "id": 1,
+      "nombre": "admin",
+      "permisos": [
+        "gestionar_usuarios",
+        "gestionar_tareas",
+        "gestionar_insumos",
+        "ver_pacientes"
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "empleado",
+      "permisos": [
+        "ver_tareas",
+        "actualizar_tareas"
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "medico",
+      "permisos": [
+        "ver_pacientes",
+        "gestionar_pacientes",
+        "crear_tareas"
+      ]
+    },
+    {
+      "id": 4,
+      "nombre": "paciente",
+      "permisos": [
+        "ver_historia",
+        "ver_tareas_asignadas"
+      ]
+    }
+  ],
+  "usuarios": [
+    {
+      "id": 1,
+      "usuario": "cperez",
+      "password": "hashed_password",
+      "rolId": 1,
+      "perfilId": 1
+    },
+    {
+      "id": 2,
+      "usuario": "lgomez",
+      "password": "hashed_password",
+      "rolId": 2,
+      "perfilId": 2
+    },
+    {
+      "id": 3,
+      "usuario": "jlopez",
+      "password": "hashed_password",
+      "rolId": 3,
+      "perfilId": 3
+    },
+    {
+      "id": 4,
+      "usuario": "mtorres",
+      "password": "hashed_password",
+      "rolId": 4,
+      "perfilId": 4
+    },
+    {
+      "id": 5,
+      "usuario": "jfernandez",
+      "password": "hashed_password",
+      "rolId": 4,
+      "perfilId": 5
+    },
+    {
+      "id": 6,
+      "usuario": "admin",
+      "password": "$2b$10$7q.m4L1domy2Lxyn369c8.6rHRST.RciJV91SCOUpeRL/E8aGW/VO",
+      "rolId": 1,
+      "perfilId": 6
+    }
+  ],
+  "perfiles": [
+    {
+      "id": 1,
+      "tipo": "empleado",
+      "empleadoId": 1,
+      "pacienteId": null
+    },
+    {
+      "id": 2,
+      "tipo": "empleado",
+      "empleadoId": 2,
+      "pacienteId": null
+    },
+    {
+      "id": 3,
+      "tipo": "empleado",
+      "empleadoId": 3,
+      "pacienteId": null
+    },
+    {
+      "id": 4,
+      "tipo": "paciente",
+      "empleadoId": null,
+      "pacienteId": 1
+    },
+    {
+      "id": 5,
+      "tipo": "paciente",
+      "empleadoId": null,
+      "pacienteId": 2
+    },
+    {
+      "id": 6,
+      "tipo": "empleado",
+      "empleadoId": 4,
+      "pacienteId": null
+    }
+  ],
+  "empleados": [
+    {
+      "id": 1,
+      "nombre": "Carlos Pérez",
+      "puesto": "Administrador"
+    },
+    {
+      "id": 2,
+      "nombre": "Laura Gómez",
+      "puesto": "Enfermera"
+    },
+    {
+      "id": 3,
+      "nombre": "Dr. Juan López",
+      "puesto": "Médico Clínico"
+    },
+    {
+      "id": 4,
+      "nombre": "Administrador del Sistema",
+      "puesto": "Administrador"
+    }
+  ],
+  "pacientes": [
+    {
+      "id": 1,
+      "nombre": "María Torres",
+      "dni": "30123456",
+      "historiaClinica": "Hipertensión controlada"
+    },
+    {
+      "id": 2,
+      "nombre": "José Fernández",
+      "dni": "28987456",
+      "historiaClinica": "Diabetes tipo II"
+    }
+  ],
+  "insumos": [
+    {
+      "id": 1,
+      "nombre": "Guantes descartables",
+      "stock": 200,
+      "unidad": "pares"
+    },
+    {
+      "id": 2,
+      "nombre": "Jeringas",
+      "stock": 150,
+      "unidad": "unidades"
+    },
+    {
+      "id": 3,
+      "nombre": "Alcohol en gel",
+      "stock": 50,
+      "unidad": "litros"
+    }
+  ],
+  "tareas": [
+    {
+      "id": 1,
+      "descripcion": "Control de presión arterial",
+      "empleadoId": 3,
+      "pacienteId": 1,
+      "estado": "pendiente",
+      "fecha": "2025-09-18"
+    },
+    {
+      "id": 2,
+      "descripcion": "Entrega de insumos",
+      "empleadoId": 2,
+      "pacienteId": null,
+      "estado": "completada",
+      "fecha": "2025-09-15"
+    }
+  ]
+}

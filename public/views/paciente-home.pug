@@ -1,0 +1,132 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="icon", href="/favicon.ico")
+    link(rel="stylesheet", href="/css/common.css")
+    link(rel="stylesheet", href="/css/paciente-home.css")
+
+  body
+    .paciente-panel
+      a.logout-btn(href="#", onclick="logout()") Cerrar Sesión
+      
+      .header
+        h1= title
+        p Portal Personal de Salud
+      
+      .welcome-section
+        h2 ¡Hola, #{usuario.nombre}!
+        p Bienvenido a tu portal personal de salud
+        p DNI: #{paciente ? paciente.dni : 'No disponible'}
+        p Fecha de acceso: #{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      
+      .info-grid
+        .info-card
+          .card-title Mi Información Personal
+          .info-item
+            .info-label Nombre Completo:
+            .info-value #{usuario.nombre}
+          .info-item
+            .info-label DNI:
+            .info-value #{paciente ? paciente.dni : 'No disponible'}
+          .info-item
+            .info-label Usuario:
+            .info-value #{usuario.usuario}
+          .info-item
+            .info-label Estado:
+            .info-value
+              span.status-badge.status-activo Activo
+        
+        .info-card
+          .card-title Historia Clínica
+          if paciente && paciente.historiaClinica
+            p #{paciente.historiaClinica}
+          else
+            p.no-data Sin información médica registrada
+          .info-item
+            .info-label Última actualización:
+            .info-value #{new Date().toLocaleDateString('es-ES')}
+      
+      .citas-section
+        h2.card-title Mis Próximas Citas
+        .cita-item
+          .cita-fecha 25 de Enero, 2025 - 10:00 AM
+          .cita-descripcion Control de rutina y revisión de estudios
+          .cita-medico Dr. Juan López - Medicina General
+        
+        .cita-item.urgente
+          .cita-fecha 28 de Enero, 2025 - 2:30 PM
+          .cita-descripcion Seguimiento post-tratamiento
+          .cita-medico Dr. Juan López - Medicina General
+        
+        .cita-item
+          .cita-fecha 5 de Febrero, 2025 - 9:15 AM
+          .cita-descripcion Consulta de control
+          .cita-medico Dr. Juan López - Medicina General
+      
+      .info-grid
+        .info-card
+          .card-title Mis Tareas Pendientes
+          .info-item
+            .info-label Análisis de sangre:
+            .info-value
+              span.status-badge.status-pendiente Pendiente
+          .info-item
+            .info-label Tomar medicación:
+            .info-value
+              span.status-badge.status-activo Completado hoy
+          .info-item
+            .info-label Ejercicios de rehabilitación:
+            .info-value
+              span.status-badge.status-pendiente En progreso
+        
+        .info-card
+          .card-title Contacto de Emergencia
+          .info-item
+            .info-label Hospital:
+            .info-value (011) 4567-8900
+          .info-item
+            .info-label Emergencias:
+            .info-value 107
+          .info-item
+            .info-label Mi médico:
+            .info-value Dr. Juan López
+          .info-item
+            .info-label Teléfono médico:
+            .info-value (011) 4567-8901
+      
+      .actions-section
+        h2.card-title Acciones Disponibles
+        .action-buttons
+          a.btn.btn-primary(href="/paciente/citas") Ver Todas Mis Citas
+          a.btn.btn-info(href="/paciente/historia") Mi Historia Clínica
+          a.btn.btn-success(href="/paciente/estudios") Mis Estudios Médicos
+          a.btn.btn-info(href="/paciente/medicacion") Control de Medicación
+          a.btn.btn-primary(href="/paciente/contacto") Contactar Médico
+          a.btn.btn-success(href="/paciente/perfil") Actualizar Perfil
+
+    script.
+      async function logout() {
+        try {
+          const response = await fetch('/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem('token');
+            document.cookie = 'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/';
+          } else {
+            alert('Error al cerrar sesión');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al cerrar sesión');
+        }
+      }

@@ -1,0 +1,79 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="icon", href="/favicon.ico")
+    link(rel="stylesheet", href="/css/common.css")
+    link(rel="stylesheet", href="/css/admin-home.css")
+
+  body
+    .admin-panel
+      a.logout-btn(href="#", onclick="logout()") Cerrar Sesión
+      
+      .header
+        h1= title
+        p Bienvenido al sistema de administración
+      
+      .welcome-section
+        h2 ¡Hola, #{usuario.nombre}!
+        p Rol: #{usuario.rol ? usuario.rol.nombre : 'Sin rol asignado'}
+        p Último acceso: #{new Date().toLocaleDateString('es-ES')}
+        if permisos && permisos.length > 0
+          p Permisos activos: #{permisos.join(', ')}
+      
+      .stats-grid
+        .stat-card
+          .stat-number 150
+          h3 Usuarios Activos
+          p Total de usuarios en el sistema
+        
+        .stat-card
+          .stat-number 45
+          h3 Médicos
+          p Profesionales registrados
+        
+        .stat-card
+          .stat-number 1,250
+          h3 Pacientes
+          p Pacientes en la base de datos
+        
+        .stat-card
+          .stat-number 89
+          h3 Tareas Pendientes
+          p Tareas por completar
+      
+      .actions-section
+        h2 Acciones Administrativas
+        .action-buttons
+          a.btn.btn-primary(href="/admin/usuarios") Gestionar Usuarios
+          a.btn.btn-primary(href="/admin/roles") Gestionar Roles
+          a.btn.btn-primary(href="/admin/empleados") Gestionar Empleados
+          a.btn.btn-secondary(href="/admin/reportes") Ver Reportes
+          a.btn.btn-secondary(href="/admin/configuracion") Configuración
+          a.btn.btn-secondary(href="/admin/logs") Logs del Sistema
+
+    script.
+      async function logout() {
+        try {
+          const response = await fetch('/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem('token');
+            document.cookie = 'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/';
+          } else {
+            alert('Error al cerrar sesión');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al cerrar sesión');
+        }
+      }

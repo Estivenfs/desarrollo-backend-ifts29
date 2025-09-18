@@ -13,6 +13,8 @@ const __dirname = path.dirname(__filename);
 const publicPath = path.join(__dirname, 'public');
 
 // Configurar middleware
+app.use(express.json()); // Para parsear JSON en el body de las peticiones
+app.use(express.urlencoded({ extended: true })); // Para parsear formularios URL-encoded
 app.use(express.static(publicPath));
 app.set('view engine', 'pug');
 app.set('views', `${publicPath}/views`);

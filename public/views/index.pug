@@ -1,1 +1,161 @@
-h1 Bienvenido a la página principal #{nameApp}
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Sistema de Gestión Médica - Iniciar Sesión
+    link(rel="icon", type="image/x-icon", href="/favicon.ico")
+    link(rel="stylesheet", href="/css/login.css")
+  body
+    .login-container
+      .login-info
+        h1 Sistema Médico
+        p Plataforma integral para la gestión de pacientes, personal médico y recursos hospitalarios.
+        
+        ul.features
+          li Gestión de pacientes y historias clínicas
+          li Panel administrativo completo
+          li Control de insumos médicos
+          li Acceso seguro por roles
+          li Reportes y estadísticas
+          li Interfaz moderna y responsive
+      
+      .login-form-container
+        .form-header
+          h2 Iniciar Sesión
+          p Ingresa tus credenciales para acceder al sistema
+        
+        .alert.alert-error#errorAlert
+        .alert.alert-success#successAlert
+        
+        form.login-form#loginForm
+          .form-group
+            label(for="usuario") Usuario
+            input(type="text", id="usuario", name="usuario", placeholder="Ingresa tu nombre de usuario", required)
+          
+          .form-group
+            label(for="password") Contraseña
+            input(type="password", id="password", name="password", placeholder="Ingresa tu contraseña", required)
+          
+          button.login-btn(type="submit", id="loginBtn") Iniciar Sesión
+          
+          .loading#loading
+            .spinner
+            p Verificando credenciales...
+        
+        .role-info
+          h4 Usuarios de ejemplo:
+          .role-examples
+            .role-example
+              .role-name Administrador
+              .role-user admin / admin123
+            .role-example
+              .role-name Médico
+              .role-user medico1 / medico123
+            .role-example
+              .role-name Empleado
+              .role-user empleado1 / emp123
+            .role-example
+              .role-name Paciente
+              .role-user paciente1 / pac123
+
+    script.
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const usuario = document.getElementById('usuario').value;
+        const password = document.getElementById('password').value;
+        const loginBtn = document.getElementById('loginBtn');
+        const loading = document.getElementById('loading');
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        
+        // Limpiar alertas previas
+        errorAlert.style.display = 'none';
+        successAlert.style.display = 'none';
+        
+        // Mostrar loading
+        loginBtn.disabled = true;
+        loading.style.display = 'block';
+        
+        try {
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ usuario, password })
+          });
+          console.log(response)
+          const data = (await response.json()).data;
+          console.log("data:", data)
+          
+          if (response.ok) {
+            // Login exitoso
+            successAlert.textContent = '¡Inicio de sesión exitoso! Redirigiendo...';
+            successAlert.style.display = 'block';
+            
+            // Guardar token si existe
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+            }
+            
+            // Redirigir según el rol del usuario
+            setTimeout(() => {
+              const userRole = data.usuario?.rol?.nombre;
+              console.log("Rol del usuario:", userRole)
+              switch(userRole) {
+                case 'admin':
+                  window.location.href = '/admin/home';
+                  break;
+                case 'medico':
+                  window.location.href = '/medico/home';
+                  break;
+                case 'paciente':
+                  window.location.href = '/paciente/home';
+                  break;
+                case 'empleado':
+                  // Los empleados pueden ir a insumos o admin según permisos
+                  window.location.href = '/insumos';
+                  break;
+                default:
+                  window.location.href = '/';
+              }
+            }, 1500);
+            
+          } else {
+            // Error en login
+            errorAlert.textContent = data.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+            errorAlert.style.display = 'block';
+          }
+          
+        } catch (error) {
+          console.error('Error:', error);
+          errorAlert.textContent = 'Error de conexión. Por favor, intenta nuevamente.';
+          errorAlert.style.display = 'block';
+        } finally {
+          // Ocultar loading
+          loginBtn.disabled = false;
+          loading.style.display = 'none';
+        }
+      });
+      
+      // Autocompletar para testing (opcional)
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const testUser = urlParams.get('test');
+        
+        if (testUser) {
+          const credentials = {
+            'admin': { usuario: 'admin', password: 'admin123' },
+            'medico': { usuario: 'medico1', password: 'medico123' },
+            'empleado': { usuario: 'empleado1', password: 'emp123' },
+            'paciente': { usuario: 'paciente1', password: 'pac123' }
+          };
+          
+          if (credentials[testUser]) {
+            document.getElementById('usuario').value = credentials[testUser].usuario;
+            document.getElementById('password').value = credentials[testUser].password;
+          }
+        }
+      });
